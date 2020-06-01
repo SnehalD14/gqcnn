@@ -27,8 +27,12 @@ ROS Server for planning GQ-CNN grasps.
 
 Author
 -----
-Vishal Satish & Jeff Mahler
+Vishal Satish
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import json
 import math
 import os
@@ -39,14 +43,10 @@ import numpy as np
 import rospy
 
 from autolab_core import YamlConfig
-from perception import (CameraIntrinsics, ColorImage, DepthImage, BinaryImage,
-                        RgbdImage)
+from perception import (CameraIntrinsics, ColorImage, DepthImage, BinaryImage, RgbdImage)
 from visualization import Visualizer2D as vis
-from gqcnn.grasping import (Grasp2D, SuctionPoint2D, RgbdImageState,
-                            RobustGraspingPolicy,
-                            CrossEntropyRobustGraspingPolicy,
-                            FullyConvolutionalGraspingPolicyParallelJaw,
-                            FullyConvolutionalGraspingPolicySuction)
+from gqcnn.grasping import (Grasp2D, SuctionPoint2D,
+                            CrossEntropyRobustGraspingPolicy, RgbdImageState)
 from gqcnn.utils import GripperMode, NoValidGraspsException
 
 from geometry_msgs.msg import PoseStamped
@@ -76,26 +76,17 @@ class GraspPlanner(object):
         self.grasp_pose_publisher = grasp_pose_publisher
 
         # Set minimum input dimensions.
-        policy_type = "cem"
-        if "type" in self.cfg["policy"]:
-            policy_type = self.cfg["policy"]["type"]
-
-        fully_conv_policy_types = {"fully_conv_suction", "fully_conv_pj"}
-        if policy_type in fully_conv_policy_types:
-            self.min_width = self.cfg["policy"]["gqcnn_recep_w"]
-            self.min_height = self.cfg["policy"]["gqcnn_recep_h"]
-        else:
-            pad = max(
-                math.ceil(
-                    np.sqrt(2) *
-                    (float(self.cfg["policy"]["metric"]["crop_width"]) / 2)),
-                math.ceil(
-                    np.sqrt(2) *
-                    (float(self.cfg["policy"]["metric"]["crop_height"]) / 2)))
-            self.min_width = 2 * pad + self.cfg["policy"]["metric"][
-                "crop_width"]
-            self.min_height = 2 * pad + self.cfg["policy"]["metric"][
-                "crop_height"]
+        self.pad = max(
+            math.ceil(
+                np.sqrt(2) *
+                (float(self.cfg["policy"]["metric"]["crop_width"]) / 2)),
+            math.ceil(
+                np.sqrt(2) *
+                (float(self.cfg["policy"]["metric"]["crop_height"]) / 2)))
+        self.min_width = 2 * self.pad + self.cfg["policy"]["metric"][
+            "crop_width"]
+        self.min_height = 2 * self.pad + self.cfg["policy"]["metric"][
+            "crop_height"]
 
     def read_images(self, req):
         """Reads images from a ROS service request.
@@ -248,7 +239,7 @@ class GraspPlanner(object):
 
         # Aggregate color and depth images into a single
         # BerkeleyAutomation/perception `RgbdImage`.
-        rgbd_im = RgbdImage.from_color_and_depth(color_im, depth_im)
+        self.rgbd_im = RgbdImage.from_color_and_depth(color_im, depth_im)
 
         # Mask bounding box.
         if bounding_box is not None:
@@ -264,13 +255,13 @@ class GraspPlanner(object):
                 min_x = 0
             if min_y < 0:
                 min_y = 0
-            if max_x > rgbd_im.width:
-                max_x = rgbd_im.width
-            if max_y > rgbd_im.height:
-                max_y = rgbd_im.height
+            if max_x > self.rgbd_im.width:
+                max_x = self.rgbd_im.width
+            if max_y > self.rgbd_im.height:
+                max_y = self.rgbd_im.height
 
             # Mask.
-            bb_segmask_arr = np.zeros([rgbd_im.height, rgbd_im.width])
+            bb_segmask_arr = np.zeros([self.rgbd_im.height, self.rgbd_im.width])
             bb_segmask_arr[min_y:max_y, min_x:max_x] = 255
             bb_segmask = BinaryImage(bb_segmask_arr.astype(np.uint8),
                                      segmask.frame)
@@ -278,17 +269,17 @@ class GraspPlanner(object):
 
         # Visualize.
         if self.cfg["vis"]["rgbd_state"]:
-            masked_rgbd_im = rgbd_im.mask_binary(segmask)
+            self.masked_rgbd_im = self.rgbd_im.mask_binary(segmask)
             vis.figure()
             vis.subplot(1, 2, 1)
-            vis.imshow(masked_rgbd_im.color)
+            vis.imshow(self.masked_rgbd_im.color)
             vis.subplot(1, 2, 2)
-            vis.imshow(masked_rgbd_im.depth)
+            vis.imshow(self.masked_rgbd_im.depth)
             vis.show()
 
         # Create an `RgbdImageState` with the cropped `RgbdImage` and
         # `CameraIntrinsics`.
-        rgbd_state = RgbdImageState(rgbd_im, camera_intr, segmask=segmask)
+        rgbd_state = RgbdImageState(self.rgbd_im, camera_intr, segmask=segmask)
 
         # Execute policy.
         try:
@@ -334,10 +325,9 @@ class GraspPlanner(object):
         else:
             rospy.logerr("Grasp type not supported!")
             raise rospy.ServiceException("Grasp type not supported!")
-
         # Store grasp representation in image space.
-        gqcnn_grasp.center_px[0] = grasp.grasp.center[0]
-        gqcnn_grasp.center_px[1] = grasp.grasp.center[1]
+        gqcnn_grasp.center[0] = grasp.grasp.center[0]
+        gqcnn_grasp.center[1] = grasp.grasp.center[1]
         gqcnn_grasp.angle = grasp.grasp.angle
         gqcnn_grasp.depth = grasp.grasp.depth
         gqcnn_grasp.thumbnail = grasp.image.rosmsg
@@ -351,11 +341,26 @@ class GraspPlanner(object):
         header.frame_id = pose_frame
         pose_stamped.header = header
         grasp_pose_publisher.publish(pose_stamped)
-
         # Return `GQCNNGrasp` msg.
         rospy.loginfo("Total grasp planning time: " +
                       str(time.time() - grasp_planning_start_time) + " secs.")
 
+
+	'''
+	Added to visualize grasps during exection on robot
+
+	if self.cfg["vis"]["final_grasp"]:
+		vis.figure(size=(10, 10))
+		vis.imshow(self.rgbd_im.color,
+			   vmin=self.cfg["vis"]["vmin"],
+			   vmax=self.cfg["vis"]["vmax"])
+		vis.grasp(grasp.grasp, scale = 2.5, show_center=False, show_axis=True)
+		vis.title("Planned grasp at depth {0:.3f}m with Q={1:.3f}".format(
+		    grasp.grasp.depth, grasp.q_value ))
+		vis.show()
+		### It gets stuck here and doesnt publish pose values!! 
+		If you want to use see the visualization, you can uncomment this part
+	'''
         return gqcnn_grasp
 
 
@@ -369,7 +374,6 @@ if __name__ == "__main__":
     # Get configs.
     model_name = rospy.get_param("~model_name")
     model_dir = rospy.get_param("~model_dir")
-    fully_conv = rospy.get_param("~fully_conv")
     if model_dir.lower() == "default":
         model_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                  "../models")
@@ -396,24 +400,13 @@ if __name__ == "__main__":
                 "Input data mode {} not supported!".format(input_data_mode))
 
     # Set config.
-    if fully_conv:
-        config_filename = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "..",
-            "cfg/examples/ros/fc_gqcnn_suction.yaml")
-    else:
-        config_filename = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "..",
-            "cfg/examples/ros/gqcnn_suction.yaml")
+    config_filename = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                   "..", "cfg/examples/ros/gqcnn_suction.yaml")
     if (gripper_mode == GripperMode.LEGACY_PARALLEL_JAW
             or gripper_mode == GripperMode.PARALLEL_JAW):
-        if fully_conv:
-            config_filename = os.path.join(
-                os.path.dirname(os.path.realpath(__file__)), "..",
-                "cfg/examples/ros/fc_gqcnn_pj.yaml")
-        else:
-            config_filename = os.path.join(
-                os.path.dirname(os.path.realpath(__file__)), "..",
-                "cfg/examples/ros/gqcnn_pj.yaml")
+        config_filename = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "..",
+            "cfg/examples/ros/gqcnn_pj.yaml")
 
     # Read config.
     cfg = YamlConfig(config_filename)
@@ -427,28 +420,7 @@ if __name__ == "__main__":
 
     # Create a grasping policy.
     rospy.loginfo("Creating Grasping Policy")
-    if fully_conv:
-        # TODO(vsatish): We should really be doing this in some factory policy.
-        if policy_cfg["type"] == "fully_conv_suction":
-            grasping_policy = \
-                FullyConvolutionalGraspingPolicySuction(policy_cfg)
-        elif policy_cfg["type"] == "fully_conv_pj":
-            grasping_policy = \
-                FullyConvolutionalGraspingPolicyParallelJaw(policy_cfg)
-        else:
-            raise ValueError(
-                "Invalid fully-convolutional policy type: {}".format(
-                    policy_cfg["type"]))
-    else:
-        policy_type = "cem"
-        if "type" in policy_cfg:
-            policy_type = policy_cfg["type"]
-        if policy_type == "ranking":
-            grasping_policy = RobustGraspingPolicy(policy_cfg)
-        elif policy_type == "cem":
-            grasping_policy = CrossEntropyRobustGraspingPolicy(policy_cfg)
-        else:
-            raise ValueError("Invalid policy type: {}".format(policy_type))
+    grasping_policy = CrossEntropyRobustGraspingPolicy(policy_cfg)
 
     # Create a grasp planner.
     grasp_planner = GraspPlanner(cfg, cv_bridge, grasping_policy,
@@ -464,6 +436,5 @@ if __name__ == "__main__":
         "grasp_planner_segmask", GQCNNGraspPlannerSegmask,
         grasp_planner.plan_grasp_segmask)
     rospy.loginfo("Grasping Policy Initialized")
-
     # Spin forever.
     rospy.spin()
