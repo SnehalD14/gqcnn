@@ -1,6 +1,6 @@
 # Pick and Place with Franka Robot using GQCNN
 
-[![Panda GQCNN]](https://www.youtube.com/watch?v=mrY0pSf1hX8)
+[![Panda GQCNN](images/grasp.png)](https://www.youtube.com/watch?v=mrY0pSf1hX8)
 
 ## GQCNN Grasping Algorithm 
 The gqcnn Python package is for training and analysis of Grasp Quality Convolutional Neural Networks (GQ-CNNs). It is part of the [Dexterity-Network (Dex-Net)](https://berkeleyautomation.github.io/dex-net/).
