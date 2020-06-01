@@ -65,13 +65,10 @@ The following instructions have been tested on **Ubuntu 16.04**.
    python ros_nodes/gqcnn_execution_node.py
    ```
 
-
-## Package Overview
-The gqcnn Python package is for training and analysis of Grasp Quality Convolutional Neural Networks (GQ-CNNs). It is part of the ongoing [Dexterity-Network (Dex-Net)](https://berkeleyautomation.github.io/dex-net/) project created and maintained by the [AUTOLAB](https://autolab.berkeley.edu) at UC Berkeley.
-
 ## Reference 
 
 Mahler, Jeffrey, Jacky Liang, Sherdil Niyaz, Michael Laskey, Richard Doan, Xinyu Liu, Juan Aparicio Ojea, and Ken Goldberg. [Dex-Net 2.0: Deep Learning to Plan Robust Grasps with Synthetic Point Clouds and Analytic Grasp Metrics.](https://arxiv.org/abs/1703.09312/) arXiv preprint arXiv:1703.09312 (2017). 
+
 For usage please refer: [GQCNN docs](https://berkeleyautomation.github.io/gqcnn/)
 
 
