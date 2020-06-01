@@ -1,5 +1,6 @@
 # Pick and Place with Franka Robot using GQCNN
 
+Video of Franka Robot picking a bar clamp using GQCNN
 [![Panda GQCNN](images/grasp.png)](https://www.youtube.com/watch?v=mrY0pSf1hX8)
 
 ## GQCNN Grasping Algorithm 
