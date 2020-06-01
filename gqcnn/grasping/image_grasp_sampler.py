@@ -29,10 +29,15 @@ Author
 ------
 Jeff Mahler & Sherdil Niyaz
 """
-from abc import ABC, abstractmethod
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
+from abc import ABCMeta, abstractmethod
 import random
 from time import time
 
+from future.utils import with_metaclass
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.ndimage.filters as snf
@@ -69,7 +74,7 @@ class DepthSamplingMode(object):
     MAX = "max"
 
 
-class ImageGraspSampler(ABC):
+class ImageGraspSampler(with_metaclass(ABCMeta, object)):
     """Wraps image to crane grasp candidate generation for easy deployment of
     GQ-CNN.
 

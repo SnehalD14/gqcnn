@@ -1,0 +1,17 @@
+autolab-core
+autolab-perception
+visualization
+numpy
+scipy
+matplotlib<=2.2.0
+opencv-python
+scikit-image<=0.14.2
+scikit-learn
+psutil
+gputil
+meshrender==0.0.9
+
+[docs]
+sphinx
+sphinxcontrib-napoleon
+sphinx_rtd_theme

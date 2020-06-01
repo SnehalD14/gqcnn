@@ -28,8 +28,13 @@ Author
 ------
 Jeff Mahler
 """
-from abc import ABC, abstractmethod
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
+from abc import ABCMeta, abstractmethod
+
+from future.utils import with_metaclass
 import numpy as np
 
 from autolab_core import Point
@@ -37,8 +42,8 @@ from autolab_core import Point
 from .grasp import Grasp2D, SuctionPoint2D, MultiSuctionPoint2D
 
 
-class Action(object):
-    """Base action class.
+class Action(with_metaclass(ABCMeta, object)):
+    """Abstract action class.
 
     Attributes
     ----------
@@ -73,8 +78,8 @@ class NoAction(Action):
     pass
 
 
-class GraspAction3D(ABC, Action):
-    """Base grasp class with grasp specified as an end-effector pose.
+class GraspAction3D(with_metaclass(ABCMeta, Action)):
+    """Abstract grasp class with grasp specified as an end-effector pose.
 
     Attributes
     ----------
