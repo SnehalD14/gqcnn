@@ -29,6 +29,10 @@ Author
 ------
 Jeff Mahler
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import argparse
 import os
 import time
@@ -49,39 +53,8 @@ CLUSTER_TOL = 0.0015
 MIN_CLUSTER_SIZE = 100
 MAX_CLUSTER_SIZE = 1000000
 
-# Set up logger.
-logger = Logger.get_logger("tools/policy_with_image_proc.py")
-
 if __name__ == "__main__":
-    # Parse args.
-    parser = argparse.ArgumentParser(
-        description="Run a grasping policy on an example image")
-    parser.add_argument(
-        "--depth_image",
-        type=str,
-        default=None,
-        help="path to a test depth image stored as a .npy file")
-    parser.add_argument("--segmask",
-                        type=str,
-                        default=None,
-                        help="path to an optional segmask to use")
-    parser.add_argument("--camera_intrinsics",
-                        type=str,
-                        default=None,
-                        help="path to the camera intrinsics")
-    parser.add_argument("--camera_pose",
-                        type=str,
-                        default=None,
-                        help="path to the camera pose")
-    parser.add_argument("--model_dir",
-                        type=str,
-                        default=None,
-                        help="path to a trained model to run")
-    parser.add_argument("--config_filename",
-                        type=str,
-                        default=None,
-                        help="path to configuration file to use")
-    args = parser.parse_args()
+    
     depth_im_filename = args.depth_image
     segmask_filename = args.segmask
     camera_intr_filename = args.camera_intrinsics

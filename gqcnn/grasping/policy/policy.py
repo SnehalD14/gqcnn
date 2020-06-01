@@ -28,13 +28,18 @@ Author
 ------
 Jeff Mahler
 """
-from abc import ABC, abstractmethod
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
+from abc import ABCMeta, abstractmethod
 import copy
 import pickle as pkl
 import math
 import os
 from time import time
 
+from future.utils import with_metaclass
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.ndimage.filters as snf
@@ -215,7 +220,7 @@ class GraspAction(object):
         return GraspAction(grasp, q_value, image)
 
 
-class Policy(ABC):
+class Policy(with_metaclass(ABCMeta, object)):
     """Abstract policy class."""
 
     def __call__(self, state):
@@ -228,7 +233,7 @@ class Policy(ABC):
         pass
 
 
-class GraspingPolicy(Policy):
+class GraspingPolicy(with_metaclass(ABCMeta, Policy)):
     """Policy for robust grasping with Grasp Quality Convolutional Neural
     Networks (GQ-CNN)."""
 

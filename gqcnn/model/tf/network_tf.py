@@ -28,18 +28,20 @@ Author
 ------
 Vishal Satish & Jeff Mahler
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 from collections import OrderedDict
-import errno
 from functools import reduce
 import json
 import math
 import operator
 import os
 import time
-
 import numpy as np
 import tensorflow as tf
-import tensorflow.contrib.framework as tcf
+import tensorflow.contrib as tcf
 
 from autolab_core import Logger
 from ...utils import (reduce_shape, read_pose_data, pose_dim,
@@ -239,16 +241,12 @@ class GQCNNTF(object):
                     os.path.join(model_dir, GQCNNFilenames.IM_MEAN))
                 self._im_std = np.load(
                     os.path.join(model_dir, GQCNNFilenames.IM_STD))
-            except IOError as e:  # Python 2.6,7/3+ compatibility.
-                if e.errno == errno.ENOENT:  # File not found.
-                    # Support for legacy file naming convention.
-                    self._im_mean = np.load(
-                        os.path.join(model_dir, GQCNNFilenames.LEG_MEAN))
-                    self._im_std = np.load(
-                        os.path.join(model_dir, GQCNNFilenames.LEG_STD))
-                else:
-                    # Some other IOError.
-                    raise e
+            except  IOError:
+                # Support for legacy file naming convention.
+                self._im_mean = np.load(
+                    os.path.join(model_dir, GQCNNFilenames.LEG_MEAN))
+                self._im_std = np.load(
+                    os.path.join(model_dir, GQCNNFilenames.LEG_STD))
             self._pose_mean = np.load(
                 os.path.join(model_dir, GQCNNFilenames.POSE_MEAN))
             self._pose_std = np.load(
@@ -340,7 +338,7 @@ class GQCNNTF(object):
             self._weights = GQCNNWeights()
 
             # Read/generate weight/bias variable names.
-            ckpt_vars = tcf.list_variables(ckpt_file)
+            ckpt_vars = tcf.framework.list_variables(ckpt_file)
             full_var_names = []
             short_names = []
             for variable, shape in ckpt_vars:
@@ -373,7 +371,7 @@ class GQCNNTF(object):
             self._weights = GQCNNWeights()
 
             # Read/generate weight/bias variable names.
-            ckpt_vars = tcf.list_variables(ckpt_file)
+            ckpt_vars = tcf.framework.list_variables(ckpt_file)
             full_var_names = []
             short_names = []
             for variable, shape in ckpt_vars:

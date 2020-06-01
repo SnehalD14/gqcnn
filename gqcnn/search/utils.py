@@ -28,6 +28,10 @@ Author
 ------
 Vishal Satish
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 from collections import OrderedDict, defaultdict
 import copy
 from datetime import datetime

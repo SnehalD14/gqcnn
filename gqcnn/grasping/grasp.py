@@ -28,6 +28,10 @@ Author
 ------
 Jeff Mahler
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import numpy as np
 
 from autolab_core import Point, RigidTransform
@@ -68,6 +72,7 @@ class Grasp2D(object):
         self.depth = depth
         self.width = width
         # If `camera_intr` is none use default primesense camera intrinsics.
+	'''
         if not camera_intr:
             self.camera_intr = CameraIntrinsics("primesense_overhead",
                                                 fx=525,
@@ -77,13 +82,14 @@ class Grasp2D(object):
                                                 width=640,
                                                 height=480)
         else:
-            self.camera_intr = camera_intr
+	'''
+        self.camera_intr = camera_intr
         self.contact_points = contact_points
         self.contact_normals = contact_normals
 
-        frame = "image"
-        if camera_intr is not None:
-            frame = camera_intr.frame
+        #frame = "image"
+        #if camera_intr is not None:
+        frame = camera_intr.frame
         if isinstance(center, np.ndarray):
             self.center = Point(center, frame=frame)
 

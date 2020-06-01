@@ -22,18 +22,22 @@ PURPOSE. THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
 HEREUNDER IS PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE
 MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 from .enums import (ImageMode, TrainingMode, GripperMode, InputDepthMode,
                     GeneralConstants, GQCNNTrainingStatus, GQCNNFilenames)
 from .policy_exceptions import (NoValidGraspsException,
                                 NoAntipodalPairsFoundException)
 from .train_stats_logger import TrainStatsLogger
 from .utils import (is_py2, set_cuda_visible_devices, pose_dim, read_pose_data,
-                    reduce_shape, weight_name_to_layer_name, imresize)
+                    reduce_shape, weight_name_to_layer_name)
 
 __all__ = [
     "is_py2", "set_cuda_visible_devices", "pose_dim", "read_pose_data",
-    "reduce_shape", "weight_name_to_layer_name", "imresize", "ImageMode",
-    "TrainingMode", "GripperMode", "InputDepthMode", "GeneralConstants",
-    "GQCNNTrainingStatus", "NoValidGraspsException",
-    "NoAntipodalPairsFoundException", "TrainStatsLogger", "GQCNNFilenames"
+    "reduce_shape", "weight_name_to_layer_name", "ImageMode", "TrainingMode",
+    "GripperMode", "InputDepthMode", "GeneralConstants", "GQCNNTrainingStatus",
+    "NoValidGraspsException", "NoAntipodalPairsFoundException",
+    "TrainStatsLogger", "GQCNNFilenames"
 ]

@@ -29,6 +29,10 @@ Author
 ------
 Jeff Mahler
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import argparse
 import logging
 import numpy as np
@@ -110,7 +114,7 @@ if __name__ == "__main__":
         "%s/grasp_planner_segmask" % (namespace), GQCNNGraspPlannerSegmask)
     cv_bridge = CvBridge()
 
-    # Set up sensor.
+    # Setup sensor.
     camera_intr = CameraIntrinsics.load(camera_intr_filename)
 
     # Read images.
